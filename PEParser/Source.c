@@ -8,7 +8,7 @@ int main()
 {
 	// open exe file
 
-	HANDLE file = CreateFileA("C:\\Users\\pavel\\source\\repos\\REDLLInjection\\PELoader\\simple.exe", 
+	HANDLE file = CreateFileA("C:\\Users\\pavel\\source\\repos\\REDLLInjection\\PELoader\\ex_original.exe",
 		GENERIC_READ, FILE_SHARE_READ,
 		NULL, OPEN_EXISTING, 0, NULL);
 	DWORD size = GetFileSize(file, NULL);
