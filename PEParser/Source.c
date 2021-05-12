@@ -81,7 +81,6 @@ int main()
 			}
 
 			PTCHAR funcName = RVA_TO_VA(PTCHAR, RVA_TO_VA(DWORD, pImageDosHeader, pThunk->u1.Function), 2);
-			//DWORD funcAddr = GetProcAddress(dllModule, funcName);
 
 			_tprintf(_T("Function: %s\n"), funcName);
 
