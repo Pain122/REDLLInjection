@@ -16,7 +16,7 @@ DWORD CreateProc(LPCTSTR appName, HANDLE& hProc, HANDLE& hThread)
 	if (!CreateProcess(appName, nullptr, nullptr, nullptr, true, CREATE_SUSPENDED, nullptr, nullptr, &si, &pi))
 	{
 		DWORD err = GetLastError();
-		_tprintf(_T("CreateProcess failed with code 0x%x"), err);
+		_tprintf(_T("CreateProcess failed with code 0x%x\n"), err);
 		return err;
 	}
 
@@ -28,13 +28,13 @@ DWORD CreateProc(LPCTSTR appName, HANDLE& hProc, HANDLE& hThread)
 	return ERROR_SUCCESS;
 }
 
-DWORD LoopEntry(HANDLE hProc, HANDLE hThread, ULONG_PTR& addressOfEntry, WORD& originalEntry)
+DWORD LoopEntry(HANDLE hProc, HANDLE hThread, ULONG_PTR& addressOfEntry, DWORD64& originalEntry)
 {
 	PROCESS_BASIC_INFORMATION pbi = {};
 	ULONG retLen = 0;
 	PEB peb = {};
 	IMAGE_DOS_HEADER dos = {};
-	IMAGE_NT_HEADERS32 nt = {};
+	IMAGE_NT_HEADERS64 nt = {};
 
 	WORD patchedEntry = 0xFEEB;
 
@@ -61,7 +61,7 @@ DWORD LoopEntry(HANDLE hProc, HANDLE hThread, ULONG_PTR& addressOfEntry, WORD& o
 		return error;
 	}
 
-	error = ReadRemote<IMAGE_NT_HEADERS32>(hProc, (ULONG_PTR)(pRemoteBaseAddress + dos.e_lfanew), nt);
+	error = ReadRemote<IMAGE_NT_HEADERS64>(hProc, (ULONG_PTR)(pRemoteBaseAddress + dos.e_lfanew), nt);
 	if (!error == 0)
 	{
 		_tprintf(_T("ReadRemote failed with code 0x%x"), error);
@@ -70,7 +70,7 @@ DWORD LoopEntry(HANDLE hProc, HANDLE hThread, ULONG_PTR& addressOfEntry, WORD& o
 
 	addressOfEntry = pRemoteBaseAddress + nt.OptionalHeader.AddressOfEntryPoint;
 
-	error = ReadRemote<WORD>(hProc, addressOfEntry, originalEntry);
+	error = ReadRemote<DWORD64>(hProc, addressOfEntry, originalEntry);
 	if (!error == 0)
 	{
 		_tprintf(_T("ReadRemote failed with code 0x%x"), error);
@@ -101,7 +101,7 @@ DWORD DeLoopEntry(HANDLE hProc, HANDLE hThread, ULONG_PTR addressOfEntry, WORD o
 	DWORD error = WriteRemote<WORD>(hProc, addressOfEntry, originalEntry);
 	if (!error == 0)
 	{
-		_tprintf(_T("WriteRemote failed with code 0x%x"), error);
+		_tprintf(_T("WriteRemote failed with code 0x%x\n"), error);
 		return error;
 	}
 
@@ -115,19 +115,16 @@ DWORD FindLoadLibrary(HANDLE hProc, HANDLE hThread, ULONG_PTR& loadLibAddr)
 	LPCSTR targetLib = "KERNEL32.dll";
 	LPCSTR targetFunc = "LoadLibraryW";
 	DWORD needed = 0;
-	DWORD size = 0;
-	DWORD amount = 0;
+	DWORD64 size = 0;
+	DWORD64 amount = 0;
 	HMODULE* hModules = nullptr;
 	IMAGE_DOS_HEADER dos = {};
-	IMAGE_NT_HEADERS32 nt = {};
+	IMAGE_NT_HEADERS64 nt = {};
 
-	if (EnumProcessModules(hProc, nullptr, 0, &needed) == 0)
-		// Retarded return 0 if it failed
-		// Return Bullshit if it worked
-		// Wanna see your error????????????? GetLastError
+	if (EnumProcessModulesEx(hProc, nullptr, 0, &needed, LIST_MODULES_64BIT) == 0)
 	{
 		DWORD err = GetLastError();
-		_tprintf(_T("CreateProcess failed with code 0x%x"), err);
+		_tprintf(_T("CreateProcess failed with code 0x%x\n"), err);
 		return err;
 	}
 
@@ -143,7 +140,7 @@ DWORD FindLoadLibrary(HANDLE hProc, HANDLE hThread, ULONG_PTR& loadLibAddr)
 	if (EnumProcessModules(hProc, hModules, size, &needed) == 0)
 	{
 		DWORD err = GetLastError();
-		_tprintf(_T("CreateProcess failed with code 0x%x"), err);
+		_tprintf(_T("CreateProcess failed with code 0x%x\n"), err);
 		return err;
 	}
 
@@ -155,14 +152,14 @@ DWORD FindLoadLibrary(HANDLE hProc, HANDLE hThread, ULONG_PTR& loadLibAddr)
 		DWORD error = ReadRemote<IMAGE_DOS_HEADER>(hProc, moduleBase, dos);
 		if (!error == 0)
 		{
-			_tprintf(_T("ReadRemote failed with code 0x%x"), error);
+			_tprintf(_T("ReadRemote failed with code 0x%x\n"), error);
 			return error;
 		}
 
-		error = ReadRemote<IMAGE_NT_HEADERS32>(hProc, (ULONG_PTR)(moduleBase + dos.e_lfanew), nt);
+		error = ReadRemote<IMAGE_NT_HEADERS64>(hProc, (ULONG_PTR)(moduleBase + dos.e_lfanew), nt);
 		if (!error == 0)
 		{
-			_tprintf(_T("ReadRemote failed with code 0x%x"), error);
+			_tprintf(_T("ReadRemote failed with code 0x%x\n"), error);
 			return error;
 		}
 
@@ -175,65 +172,59 @@ DWORD FindLoadLibrary(HANDLE hProc, HANDLE hThread, ULONG_PTR& loadLibAddr)
 		error = ReadRemote<IMAGE_EXPORT_DIRECTORY>(hProc, (ULONG_PTR)(moduleBase + exportDir.VirtualAddress), moduleExport);
 		if (!error == 0)
 		{
-			_tprintf(_T("ReadRemote 3 args failed with code 0x%x"), error);
+			_tprintf(_T("ReadRemote 3 args failed with code 0x%x\n"), error);
 			return error;
 		}
 
 		CHAR moduleName[MAX_PATH];
-		DWORD moduleNameLen = 0;
+		DWORD64 moduleNameLen = 0;
 
 		error = ReadRemote<CHAR>(hProc, (ULONG_PTR)(moduleBase + moduleExport.Name), moduleName, moduleNameLen);
 		if (!error == 0)
 		{
-			_tprintf(_T("ReadRemote failed with code 0x%x"), error);
+			_tprintf(_T("ReadRemote failed with code 0x%x\n"), error);
 			return error;
 		}
 
 		if (strcmp(moduleName, targetLib)) continue;
 
-		DWORD numberOfFuncs = moduleExport.NumberOfFunctions;
-		DWORD numberOfFuncs2 = moduleExport.NumberOfFunctions;
+		DWORD64 numberOfFuncs = moduleExport.NumberOfFunctions;
+		DWORD64 numberOfFuncs2 = moduleExport.NumberOfFunctions;
 
 		ULONG_PTR* functionNamesRva = (ULONG_PTR*)malloc(sizeof(ULONG_PTR) * numberOfFuncs);
 		ULONG_PTR* functionAddrsRva = (ULONG_PTR*)malloc(sizeof(ULONG_PTR) * numberOfFuncs);
-
-		char** name_table = (char**)(moduleBase + moduleExport.AddressOfNames);
-
-		for (int i = 0; i < moduleExport.NumberOfNames; i++) //until i is 1 less than how many names there are to iterate through elements
-		{
-			printf("%s ", (char*)(moduleBase + (DWORD64)(uintptr_t)name_table[i])); //print the name of each function iterated through, I went back and read through these names and didn't see GetProcAddress anywhere
-		}
 
 		if (functionNamesRva == 0)
 		{
 			return -1;
 		}
-		error = ReadRemote<ULONG_PTR>(hProc, (ULONG_PTR)(moduleBase + moduleExport.AddressOfNames), functionNamesRva, numberOfFuncs);
+
+		error = ReadRemote<ULONG_PTR>(hProc, (ULONG_PTR)(moduleBase + (DWORD64)(moduleExport.AddressOfNames)), functionNamesRva, numberOfFuncs);
 		if (!error == 0)
 		{
-			_tprintf(_T("ReadRemote failed with code 0x%x"), error);
+			_tprintf(_T("ReadRemote failed with code 0x%x\n"), error);
 			return error;
 		}
 
 		if (functionAddrsRva == 0) {
 			return -1;
 		}
-		error = ReadRemote<ULONG_PTR>(hProc, (ULONG_PTR)(moduleBase + moduleExport.AddressOfFunctions), functionAddrsRva, numberOfFuncs2);
+		error = ReadRemote<ULONG_PTR>(hProc, (ULONG_PTR)(moduleBase + (DWORD64)(moduleExport.AddressOfFunctions)), functionAddrsRva, numberOfFuncs2);
 		if (!error == 0)
 		{
-			_tprintf(_T("ReadRemote failed with code 0x%x"), error);
+			_tprintf(_T("ReadRemote failed with code 0x%x\n"), error);
 			return error;
 		}
 
-		for (DWORD j = 0; j < numberOfFuncs; j++)
+		for (DWORD64 j = 0; j < numberOfFuncs; j++)
 		{
 			CHAR functionName[MAX_PATH];
-			DWORD functionNameLen = 0;
+			DWORD64 functionNameLen = 0;
 
-			error = ReadRemote<CHAR>(hProc, (ULONG_PTR)(moduleBase + functionNamesRva[j]), functionName, functionNameLen);
+			error = ReadRemote<CHAR>(hProc, (ULONG_PTR)((DWORD64)moduleBase + functionNamesRva[j]), functionName, functionNameLen);
 			if (!error == 0)
 			{
-				_tprintf(_T("ReadRemote failed with code 0x%x"), error);
+				_tprintf(_T("ReadRemote failed with code 0x%x\n"), error);
 				return error;
 			}
 
@@ -342,12 +333,12 @@ DWORD Inject(HANDLE hProc, HANDLE hThread, ULONG_PTR& loadLibAddr)
 
 int main()
 {
-	LPCTSTR appName = _T("C:\\Windows\\SysWOW64\\notepad.exe");
+	LPCTSTR appName = _T("C:\\Windows\\System32\\notepad.exe");
 	HANDLE hProc = INVALID_HANDLE_VALUE;
 	HANDLE hThread = INVALID_HANDLE_VALUE;
 	DWORD status = ERROR_SUCCESS;
 	ULONG_PTR addressOfEntry = 0;
-	WORD originalEntry = 0;
+	DWORD64 originalEntry = 0;
 	ULONG_PTR loadLibAddr = 0;
 
 	// create process suspended
@@ -357,7 +348,7 @@ int main()
 	// find loadlibrary
 	IF_FAIL_GO(status, FindLoadLibrary(hProc, hThread, loadLibAddr), MAIN_ERROR_HANDLE);
 	// inject
-	IF_FAIL_GO(status, Inject(hProc, hThread, loadLibAddr), MAIN_ERROR_HANDLE);
+	// IF_FAIL_GO(status, Inject(hProc, hThread, loadLibAddr), MAIN_ERROR_HANDLE);
 	// deloop
 	IF_FAIL_GO(status, DeLoopEntry(hProc, hThread, addressOfEntry, originalEntry), MAIN_ERROR_HANDLE);
 

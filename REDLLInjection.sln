@@ -15,6 +15,10 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PELoader", "PELoader\PELoad
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PELoaderGood", "PELoaderGood\PELoaderGood.vcxproj", "{8680F96D-1BE1-4017-BA82-6FE18C7BCA1C}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Injector64", "Injector64\Injector64.vcxproj", "{41FAAA20-AE67-4EFF-979F-E7CEB6F59AEC}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DllInjection", "DllInjection\DllInjection.vcxproj", "{CCA0302F-13FC-4340-82B1-703713208632}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -71,6 +75,22 @@ Global
 		{8680F96D-1BE1-4017-BA82-6FE18C7BCA1C}.Release|x64.Build.0 = Release|x64
 		{8680F96D-1BE1-4017-BA82-6FE18C7BCA1C}.Release|x86.ActiveCfg = Release|Win32
 		{8680F96D-1BE1-4017-BA82-6FE18C7BCA1C}.Release|x86.Build.0 = Release|Win32
+		{41FAAA20-AE67-4EFF-979F-E7CEB6F59AEC}.Debug|x64.ActiveCfg = Debug|x64
+		{41FAAA20-AE67-4EFF-979F-E7CEB6F59AEC}.Debug|x64.Build.0 = Debug|x64
+		{41FAAA20-AE67-4EFF-979F-E7CEB6F59AEC}.Debug|x86.ActiveCfg = Debug|Win32
+		{41FAAA20-AE67-4EFF-979F-E7CEB6F59AEC}.Debug|x86.Build.0 = Debug|Win32
+		{41FAAA20-AE67-4EFF-979F-E7CEB6F59AEC}.Release|x64.ActiveCfg = Release|x64
+		{41FAAA20-AE67-4EFF-979F-E7CEB6F59AEC}.Release|x64.Build.0 = Release|x64
+		{41FAAA20-AE67-4EFF-979F-E7CEB6F59AEC}.Release|x86.ActiveCfg = Release|Win32
+		{41FAAA20-AE67-4EFF-979F-E7CEB6F59AEC}.Release|x86.Build.0 = Release|Win32
+		{CCA0302F-13FC-4340-82B1-703713208632}.Debug|x64.ActiveCfg = Debug|x64
+		{CCA0302F-13FC-4340-82B1-703713208632}.Debug|x64.Build.0 = Debug|x64
+		{CCA0302F-13FC-4340-82B1-703713208632}.Debug|x86.ActiveCfg = Debug|Win32
+		{CCA0302F-13FC-4340-82B1-703713208632}.Debug|x86.Build.0 = Debug|Win32
+		{CCA0302F-13FC-4340-82B1-703713208632}.Release|x64.ActiveCfg = Release|x64
+		{CCA0302F-13FC-4340-82B1-703713208632}.Release|x64.Build.0 = Release|x64
+		{CCA0302F-13FC-4340-82B1-703713208632}.Release|x86.ActiveCfg = Release|Win32
+		{CCA0302F-13FC-4340-82B1-703713208632}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

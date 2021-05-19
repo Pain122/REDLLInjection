@@ -1,6 +1,6 @@
-#if 0
 #include <Header.h>
 #include <tchar.h>
+#include <stdio.h>
 
 int _tmain()
 {
@@ -9,8 +9,8 @@ int _tmain()
 
 	return 0;
 }
-#endif
 
+#if 0
 #include <Windows.h>
 
 typedef HMODULE(_stdcall* pfnLoadLib)(LPCWSTR libname);
@@ -31,3 +31,4 @@ int main()
 {
 	Func();
 }
+#endif
